@@ -374,7 +374,7 @@
 
                 <div class="text-center border-t border-gray-200 pt-4 mt-6">
                     <p class="text-xs text-gray-500">
-              © 2026 R.G STORE | All Rights Reserved | Developed By <a href="https://t.me/gfxrahulvai" target="_blank" class="font-bold text-sky-600 no-underline hover:underline">GAULE STORE</a>
+              © 2026 R.G STORE | All Rights Reserved | Developed By <a href="https://wa.me/9779761081110" target="_blank" class="font-bold text-sky-600 no-underline hover:underline">GAULE STORE</a>
                    </p>
                 </div>
             </div>
@@ -393,11 +393,27 @@
             </div>
         </section>
 
+        <!-- HISTORY / DEPOSITS SECTION -->
         <section id="history-sec" class="hidden animate-fade-in pb-24">
-            <div class="bg-white border-b border-gray-200 px-4 py-3">
-                <h2 class="text-lg font-bold text-gray-800">Order History</h2>
+            <div class="bg-white border-b border-gray-200 px-4 py-3 flex justify-between items-center">
+                <h2 class="text-lg font-bold text-gray-800">History</h2>
+                <div class="flex gap-2 bg-gray-100 p-1 rounded-lg">
+                    <button onclick="switchHistoryTab('orders')" id="hist-tab-orders" class="px-3 py-1 text-xs font-bold rounded-md bg-sky-600 text-white shadow-sm transition">Orders</button>
+                    <button onclick="switchHistoryTab('deposits')" id="hist-tab-deposits" class="px-3 py-1 text-xs font-bold rounded-md text-gray-600 transition">Deposits</button>
+                </div>
             </div>
-            <div id="history-list" class="px-4 py-3">
+            
+            <div id="history-list-container" class="px-3 py-3">
+                <div id="history-list" class="space-y-3"></div>
+                
+                <!-- Match Screenshot Design for Deposits -->
+                <div id="deposit-history-list" class="space-y-4 hidden">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 flex items-center gap-2 mb-2">
+                        <i class="fas fa-list-alt text-lg text-gray-700"></i>
+                        <h3 class="font-bold text-gray-800 text-base">My Deposits</h3>
+                    </div>
+                    <div id="deposit-items-container" class="space-y-3"></div>
+                </div>
             </div>
         </section>
 
@@ -561,7 +577,7 @@
                         <img src="" id="step2-center-logo" class="w-full object-contain">
                     </div>
                     
-                    <h2 class="text-gray-600 font-medium mb-8 text-lg">Auto Pay</h2>
+                    <h2 class="text-gray-600 font-medium mb-8 text-lg">Manual Pay</h2>
 
                     <div class="w-full bg-[#003399] text-white py-2.5 text-center text-sm font-bold rounded-t-lg mb-0 shadow-md">
                         Payment Methods
@@ -608,7 +624,7 @@
                             <img id="pay-site-logo-small" src="" class="w-full h-full rounded-full object-cover">
                         </div>
                         <div>
-                            <p class="text-sm text-gray-800 font-bold">Auto Pay</p>
+                            <p class="text-sm text-gray-800 font-bold">Manual Pay</p>
                         </div>
                     </div>
 
@@ -619,6 +635,12 @@
 
                     <div id="payment-theme-card" class="rounded-xl shadow-lg overflow-hidden text-white mb-6 relative transition-colors duration-300">
                         
+                        <!-- QR Code Section (Now matches theme color via background color inherit or styled classes) -->
+                        <div id="qr-code-container" class="p-4 text-center hidden border-b border-white/20">
+                            <p class="text-xs font-bold text-white mb-2">Scan QR Code to Pay</p>
+                            <img id="pay-qr-img" src="" class="w-40 h-40 mx-auto object-contain rounded-lg border bg-white p-1 shadow-sm">
+                        </div>
+
                         <div class="p-5 text-center">
                             <h3 class="font-bold text-lg mb-4 drop-shadow-md">Provide Transaction ID / Reference</h3>
                             <input type="text" id="pay-trx-input" 
@@ -635,7 +657,7 @@
 
                             <div class="flex gap-2">
                                 <span class="mt-1">•</span>
-                                <p>Send funds to the account details below:</p>
+                                <p>Send funds to the account details or scan the QR code above:</p>
                             </div>
 
                             <div class="flex flex-col gap-1 pl-3">
@@ -1632,7 +1654,7 @@ const firebaseConfig = {
             document.getElementById('am-step-3').classList.add('hidden');
         }
         if(secId === 'history') {
-            loadHistory();
+            switchHistoryTab('orders');
         }
         
         window.scrollTo({ top: 0, behavior: 'instant' });
@@ -1640,6 +1662,27 @@ const firebaseConfig = {
         document.body.scrollTop = 0;
     }
     
+    function switchHistoryTab(tab) {
+        const ordersTabBtn = document.getElementById('hist-tab-orders');
+        const depositsTabBtn = document.getElementById('hist-tab-deposits');
+        const ordersList = document.getElementById('history-list');
+        const depositsList = document.getElementById('deposit-history-list');
+
+        if(tab === 'orders') {
+            ordersTabBtn.className = "px-3 py-1 text-xs font-bold rounded-md bg-sky-600 text-white shadow-sm transition";
+            depositsTabBtn.className = "px-3 py-1 text-xs font-bold rounded-md text-gray-600 transition";
+            ordersList.classList.remove('hidden');
+            depositsList.classList.add('hidden');
+            loadHistory();
+        } else {
+            depositsTabBtn.className = "px-3 py-1 text-xs font-bold rounded-md bg-sky-600 text-white shadow-sm transition";
+            ordersTabBtn.className = "px-3 py-1 text-xs font-bold rounded-md text-gray-600 transition";
+            depositsList.classList.remove('hidden');
+            ordersList.classList.add('hidden');
+            loadDepositHistory();
+        }
+    }
+
     function loadHistory() {
         const list = document.getElementById('history-list');
         if (!currentUser) return;
@@ -1694,7 +1737,7 @@ const firebaseConfig = {
                         </div>`;
 
                     list.innerHTML += `
-                        <div class="bg-white border border-gray-200 rounded-lg mb-3">
+                        <div class="bg-white border border-gray-200 rounded-lg mb-3 shadow-sm">
                             <div class="p-3">
                                 <div class="flex justify-between items-start mb-2">
                                     <div>
@@ -1718,6 +1761,95 @@ const firebaseConfig = {
                 console.error("Error loading order history: ", error);
                 list.innerHTML = `<div class="text-center text-red-500 py-4 text-xs font-mono">Error: ${error.message}</div>`;
             });
+    }
+
+    function loadDepositHistory() {
+        const container = document.getElementById('deposit-items-container');
+        if (!currentUser) return;
+
+        container.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin text-sky-500"></i> Loading Deposit History...</div>';
+
+        db.collection('deposits').where('userId', '==', currentUser.uid).get()
+            .then(snapshot => {
+                if (snapshot.empty) {
+                    container.innerHTML = `<div class="text-center py-8 text-gray-500 bg-white rounded-xl shadow-sm border border-gray-200"><p>No deposit history found</p></div>`;
+                    return;
+                }
+
+                const deposits = [];
+                snapshot.forEach(doc => {
+                    deposits.push({ id: doc.id, ...doc.data() });
+                });
+
+                deposits.sort((a, b) => {
+                    const dateA = a.date ? a.date.toDate() : new Date(0);
+                    const dateB = b.date ? b.date.toDate() : new Date(0);
+                    return dateB - dateA;
+                });
+
+                container.innerHTML = "";
+                
+                deposits.forEach((d, index) => {
+                    let rawStatus = (d.status || 'pending').toLowerCase();
+                    let statusBadgeClass = "text-yellow-600";
+                    let displayStatusText = rawStatus;
+
+                    if (rawStatus === 'approved' || rawStatus === 'success' || rawStatus === 'completed' || rawStatus === 'paid') {
+                        statusBadgeClass = "text-green-600";
+                        displayStatusText = 'paid';
+                    } else if (rawStatus === 'cancel' || rawStatus === 'rejected') {
+                        statusBadgeClass = "text-red-600";
+                    } else {
+                        statusBadgeClass = "text-yellow-600";
+                        displayStatusText = 'pending';
+                    }
+
+                    let dateStr = "N/A";
+                    if (d.date && d.date.toDate) {
+                        const dt = d.date.toDate();
+                        const day = String(dt.getDate()).padStart(2, '0');
+                        const month = String(dt.getMonth() + 1).padStart(2, '0');
+                        const year = dt.getFullYear();
+                        let hours = dt.getHours();
+                        const minutes = String(dt.getMinutes()).padStart(2, '0');
+                        const seconds = String(dt.getSeconds()).padStart(2, '0');
+                        const ampm = hours >= 12 ? 'PM' : 'AM';
+                        hours = hours % 12;
+                        hours = hours ? hours : 12;
+                        const strHours = String(hours).padStart(2, '0');
+                        dateStr = `${day}-${month}-${year} ${strHours}:${minutes}:${seconds} ${ampm}`;
+                    }
+
+                    let serialNo = d.serialNo || Math.floor(1000 + Math.abs(hashCode(d.trxId || d.id)) % 9000);
+                    let paymentMethodStr = (d.method || 'esewa').toLowerCase();
+                    if (!paymentMethodStr.includes('personal')) {
+                        paymentMethodStr += ' (PERSONAL)';
+                    }
+
+                    container.innerHTML += `
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 space-y-1.5 text-sm">
+                            <div class="font-bold text-gray-900">Serial NO: ${serialNo}</div>
+                            <div class="font-bold text-gray-900">Date: ${dateStr}</div>
+                            <div class="font-bold text-gray-900">Payment Method: ${paymentMethodStr}</div>
+                            <div class="font-bold text-gray-900">Transaction ID: <span class="font-normal select-all">${d.trxId || 'N/A'}</span></div>
+                            <div class="font-bold text-gray-900">Amount: Rs. ${d.amount}</div>
+                            <div class="font-bold text-gray-900">Status: <span class="${statusBadgeClass} font-bold capitalize">${displayStatusText}</span></div>
+                        </div>`;
+                });
+            })
+            .catch(error => {
+                console.error("Error loading deposit history: ", error);
+                container.innerHTML = `<div class="text-center text-red-500 py-4 text-xs font-mono">Error: ${error.message}</div>`;
+            });
+    }
+
+    function hashCode(str) {
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+            hash = (hash << 5) - hash + str.charCodeAt(i);
+            hash |= 0;
+        }
+        return hash;
     }
 
     function loadRecentOrdersGlobal() {
@@ -1823,6 +1955,10 @@ const firebaseConfig = {
         themeCard.className = `rounded-xl shadow-lg overflow-hidden text-white mb-6 relative transition-colors duration-300 ${themeClass}`;
 
         document.getElementById('pay-admin-number').innerText = "Loading...";
+        const qrContainer = document.getElementById('qr-code-container');
+        const qrImg = document.getElementById('pay-qr-img');
+        qrContainer.classList.add('hidden');
+
         db.collection("admin").doc("payment").get().then(doc => {
             if(doc.exists) {
                 const data = doc.data();
@@ -1830,6 +1966,16 @@ const firebaseConfig = {
                 const fieldKey = keyMap[method.toLowerCase()] || method;
                 const num = data[fieldKey] || data[method] || "Not Available";
                 document.getElementById('pay-admin-number').innerText = num;
+
+                // Load QR Code if exists in Firebase
+                const qrKeyMap = { esewa: 'eSewaQR', khalti: 'KhaltiQR', bank: 'BankQR' };
+                const qrFieldKey = qrKeyMap[method.toLowerCase()] || (method + 'QR');
+                const qrUrl = data[qrFieldKey];
+
+                if(qrUrl) {
+                    qrImg.src = qrUrl;
+                    qrContainer.classList.remove('hidden');
+                }
             }
         });
 
