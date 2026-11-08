@@ -143,7 +143,7 @@
 </head>
 <body class="select-none bg-slate-50">
 
-<div id="app-content" class="relative max-w-md mx-auto bg-slate-50 min-h-screen shadow-2xl">
+<div id="app-content" class="relative w-full min-h-screen bg-slate-50 shadow-2xl mx-auto max-w-7xl">
     <header class="bg-white/90 backdrop-blur-md p-4 sticky top-0 z-40 flex justify-between items-center shadow-sm">
         <div class="flex items-center gap-2">
             <img id="header-logo-img" src="https://placehold.co/150x50?text=Loding..." class="h-16 object-contain">
@@ -158,22 +158,23 @@
         </div>
     </header>
 
+    <!-- यहाँ Notice लाई PC मा पनि मिलेर बस्ने गरी max-w-5xl र mx-auto थपिएको छ -->
     <div id="notice-section" class="mb-0 px-3">
-        <div class="bg-sky-500 text-white p-4 relative">
+        <div class="bg-sky-500 text-white p-4 relative max-w-5xl mx-auto rounded-xl shadow-sm mt-3">
             <button onclick="this.parentElement.parentElement.style.display='none'" class="absolute top-2 right-2 text-white/80 hover:text-white transition">
                 <i class="fas fa-times text-sm"></i>
             </button>
             <div class="pr-6">
-                <div class="font-bold text-sm mb-1">Notice</div>
+                <div class="font-bold text-sm mb-1 flex items-center gap-1.5"><i class="fas fa-bullhorn"></i> Notice</div>
                 <div id="notice-text" class="text-sm">Welcome to our app...</div>
             </div>
         </div>
     </div>
 
-    <main class="p-3 relative pb-20">
+    <main class="p-3 md:p-6 relative pb-28 max-w-5xl mx-auto">
         
         <section id="auth-sec" class="hidden animate-fade-in">
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden relative p-6">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden relative p-6 max-w-md mx-auto">
                 
                 <button onclick="showSec('home')" class="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition z-10">
                     <i class="fas fa-times text-xl"></i>
@@ -258,7 +259,7 @@
         </section>
 
         <section id="home-sec" class="animate-fade-in pb-8">
-            <div id="banner-container" class="mb-6 overflow-hidden shadow-md h-44 bg-gray-200 relative group">
+            <div id="banner-container" class="mb-6 overflow-hidden shadow-md h-44 md:h-72 bg-gray-200 relative group rounded-xl">
                 <div id="slider-wrapper" class="flex h-full w-full transition-transform duration-500 ease-out">
                     <img src="https://placehold.co/600x300/29b6f6/FFF?text=Loading..." class="w-full h-full object-cover flex-shrink-0">
                 </div>
@@ -326,7 +327,7 @@
                     <b>Notice:</b> For any order-related issues, please message us with your order screenshot and payment transaction ID. Ordering for anyone under 18 without parental consent is strictly prohibited.
                 </p>
 
-                <div class="grid grid-cols-2 gap-3 mb-6">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
                     <a id="about-facebook" href="#" target="_blank" class="flex items-center justify-center gap-2 bg-gray-50 p-3 rounded-lg border border-gray-200 hover:bg-gray-100 transition no-underline">
                         <i class="fab fa-facebook-f text-lg text-[#1877F2]"></i> <span class="font-semibold text-sm text-gray-700">Facebook</span>
                     </a>
@@ -381,21 +382,20 @@
         </section>
 
         <section id="tutorial-sec" class="hidden animate-fade-in pb-20">
-            <div class="bg-white">
+            <div class="bg-white rounded-xl shadow-sm">
                 <div class="p-6 border-b border-gray-100">
                     <h2 class="font-semibold text-xl text-gray-800 mb-1">Video Tutorials</h2>
                     <p class="text-sm text-gray-500">Learn how to use our services</p>
                 </div>
                 
                 <div class="p-4">
-                    <div id="tutorial-list-container" class="space-y-4"></div>
+                    <div id="tutorial-list-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
                 </div>
             </div>
         </section>
 
-        <!-- HISTORY / DEPOSITS SECTION -->
         <section id="history-sec" class="hidden animate-fade-in pb-24">
-            <div class="bg-white border-b border-gray-200 px-4 py-3 flex justify-between items-center">
+            <div class="bg-white border-b border-gray-200 px-4 py-3 flex justify-between items-center rounded-t-xl">
                 <h2 class="text-lg font-bold text-gray-800">History</h2>
                 <div class="flex gap-2 bg-gray-100 p-1 rounded-lg">
                     <button onclick="switchHistoryTab('orders')" id="hist-tab-orders" class="px-3 py-1 text-xs font-bold rounded-md bg-sky-600 text-white shadow-sm transition">Orders</button>
@@ -406,7 +406,6 @@
             <div id="history-list-container" class="px-3 py-3">
                 <div id="history-list" class="space-y-3"></div>
                 
-                <!-- Match Screenshot Design for Deposits -->
                 <div id="deposit-history-list" class="space-y-4 hidden">
                     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 flex items-center gap-2 mb-2">
                         <i class="fas fa-list-alt text-lg text-gray-700"></i>
@@ -418,7 +417,7 @@
         </section>
 
         <section id="topup-sec" class="hidden animate-fade-in pb-10 bg-slate-50">
-            <div class="bg-white p-3 rounded-xl shadow-sm flex items-center gap-4 mb-4 border border-gray-100 mx-2 mt-2">
+            <div class="bg-white p-3 rounded-xl shadow-sm flex items-center gap-4 mb-4 border border-gray-100 mx-2 mt-2 relative">
                 <button onclick="showSec('home')" class="text-gray-600 hover:text-sky-500 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-200 absolute top-4 right-4">
                     <i class="fas fa-times text-lg"></i>
                 </button>
@@ -439,7 +438,7 @@
                     <i class="fas fa-spinner fa-spin text-sky-500 text-2xl"></i>
                 </div>
 
-                <div id="products-grid" class="grid grid-cols-2 gap-2">
+                <div id="products-grid" class="grid grid-cols-2 md:grid-cols-3 gap-2">
                 </div>
                 
                 <div class="mt-3 text-right">
@@ -520,7 +519,7 @@
                 </div>
 
                 <div class="px-4">
-                    <div class="bg-white rounded-lg p-8 shadow-sm border border-gray-200 mb-6 text-center">
+                    <div class="bg-white rounded-lg p-8 shadow-sm border border-gray-200 mb-6 text-center max-w-lg mx-auto">
                         <label class="block text-gray-500 text-sm font-bold mb-4 uppercase tracking-wider">
                             Enter Amount to Deposit
                         </label>
@@ -538,7 +537,7 @@
                         </button>
                     </div>
 
-                    <div class="mt-4">
+                    <div class="mt-4 max-w-lg mx-auto">
                         <div class="flex items-center gap-2 mb-2">
                             <i class="fab fa-youtube text-red-600"></i>
                             <h3 class="font-bold text-gray-700 text-sm">Tutorial: How to Add Money</h3>
@@ -559,7 +558,7 @@
                 </div>
             </div>
 
-            <div id="am-step-2" class="hidden step-transition h-screen flex flex-col bg-[#f0f4f7]">
+            <div id="am-step-2" class="hidden step-transition min-h-screen flex flex-col bg-[#f0f4f7]">
                 <div class="bg-white p-3 flex items-center justify-between shadow-sm sticky top-0 z-10">
                     <button onclick="backToAmountStep()" class="text-gray-500 w-8 h-8 flex items-center justify-center">
                          <i class="fas fa-arrow-left text-lg"></i>
@@ -572,7 +571,7 @@
                     </button>
                 </div>
 
-                <div class="flex-1 flex flex-col justify-center items-center px-6">
+                <div class="flex-1 flex flex-col justify-center items-center px-6 max-w-md mx-auto w-full">
                     <div class="bg-white rounded-full w-32 h-32 flex items-center justify-center shadow-sm border border-gray-100 mb-6 p-4">
                         <img src="" id="step2-center-logo" class="w-full object-contain">
                     </div>
@@ -618,7 +617,7 @@
                     <img id="pay-method-logo" src="" class="h-12 mx-auto object-contain drop-shadow-sm">
                 </div>
 
-                <div class="px-4">
+                <div class="px-4 max-w-lg mx-auto">
                     <div class="bg-white rounded-xl p-4 flex items-center gap-4 mb-4 shadow-sm">
                         <div class="w-12 h-12 rounded-full border border-gray-100 p-1">
                             <img id="pay-site-logo-small" src="" class="w-full h-full rounded-full object-cover">
@@ -635,7 +634,6 @@
 
                     <div id="payment-theme-card" class="rounded-xl shadow-lg overflow-hidden text-white mb-6 relative transition-colors duration-300">
                         
-                        <!-- QR Code Section (Now matches theme color via background color inherit or styled classes) -->
                         <div id="qr-code-container" class="p-4 text-center hidden border-b border-white/20">
                             <p class="text-xs font-bold text-white mb-2">Scan QR Code to Pay</p>
                             <img id="pay-qr-img" src="" class="w-40 h-40 mx-auto object-contain rounded-lg border bg-white p-1 shadow-sm">
@@ -683,7 +681,7 @@
                     </div>
                 </div>
 
-                <div class="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 max-w-md mx-auto z-50 rounded-t-xl">
+                <div class="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 max-w-lg mx-auto z-50 rounded-t-xl">
                     <button onclick="handleNewVerify()" 
                             class="w-full bg-[#b71c1c] text-white font-bold py-3 rounded shadow-lg hover:bg-red-800 transition active:scale-95 text-lg tracking-wider">
                         VERIFY
@@ -713,7 +711,7 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-3 px-4 mb-6">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 px-4 mb-6">
                 <div class="bg-white py-3 px-2 rounded-lg border border-[#2196F3] text-center shadow-sm">
                     <h3 class="text-[#2196F3] font-bold text-base mb-1" id="acc-support-pin">...</h3>
                     <p class="text-black font-bold text-[11px]">Support PIN</p>
@@ -736,12 +734,12 @@
             </div>
 
             <div class="px-4 mb-4">
-                <div class="bg-white shadow-sm">
+                <div class="bg-white shadow-sm rounded-xl">
                     <div class="px-4 py-3 flex items-center gap-2">
                         <i class="fas fa-folder-open text-black text-sm"></i>
                         <h3 class="font-bold text-sm text-black">Account Information</h3>
                     </div>
-                    <div class="border-t border-gray-100 p-4 space-y-4">
+                    <div class="border-t border-gray-100 p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="bg-white rounded-lg border border-gray-100 shadow-[0_2px_8px_rgba(0,0,0,0.04)] py-4 text-center">
                             <div class="flex items-center justify-center gap-2 mb-1 text-gray-500">
                                 <i class="fas fa-redo-alt text-xs"></i>
@@ -764,7 +762,7 @@
             </div>
 
             <div class="px-4 mb-6">
-                <div class="bg-white shadow-sm">
+                <div class="bg-white shadow-sm rounded-xl">
                     <div class="px-4 py-3 flex items-center gap-2">
                         <i class="fas fa-info-circle text-black text-sm"></i>
                         <h3 class="font-bold text-sm text-black">User Information</h3>
@@ -776,7 +774,7 @@
                 </div>
                 
                 <div class="mt-4">
-                     <button onclick="handleLogout()" class="w-full p-3 bg-white shadow-sm flex items-center justify-center gap-2 hover:bg-red-50 transition duration-300">
+                     <button onclick="handleLogout()" class="w-full p-3 bg-white shadow-sm rounded-xl flex items-center justify-center gap-2 hover:bg-red-50 transition duration-300">
                         <i class="fas fa-sign-out-alt text-red-500"></i>
                         <span class="font-bold text-sm text-red-500">Log Out</span>
                      </button>
@@ -808,8 +806,8 @@
         </div>
     </div>
 
-    <nav class="fixed bottom-0 w-full bg-white/95 backdrop-blur-sm border-t border-gray-100/50 py-3 px-6 shadow-[0_-5px_20px_rgba(0,0,0,0.03)] z-40 max-w-md mx-auto left-0 right-0 rounded-t-[20px]">
-        <div class="flex justify-between items-center">
+    <nav class="fixed bottom-0 w-full bg-white/95 backdrop-blur-sm border-t border-gray-100/50 py-3 px-6 shadow-[0_-5px_20px_rgba(0,0,0,0.03)] z-40 max-w-5xl mx-auto left-0 right-0 rounded-t-[20px]">
+        <div class="flex justify-around items-center">
             <button onclick="showSec('home')" class="nav-item flex flex-col items-center gap-1.5 text-gray-700 transition-all duration-300 hover:text-sky-500 active-tab group" id="nav-home">
                 <img src="https://img.icons8.com/?size=100&id=OXVih02dFZ53&format=png&color=000000" class="w-6 h-6 group-hover:scale-110 transition-transform duration-300" alt="Home">
                 <span class="text-[10px] font-semibold tracking-wide">Home</span>
@@ -1205,7 +1203,7 @@ const firebaseConfig = {
                     listContainer.innerHTML += `
                     <div>
                         <h3 class="font-bold text-gray-700 text-xl mb-3 text-center" style="letter-spacing: 0.5px">${category.name}</h3>
-                        <div class="grid grid-cols-3 gap-6 px-4">
+                        <div class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 px-2">
                             ${gamesHTML}
                         </div>
                     </div>`;
@@ -1229,7 +1227,7 @@ const firebaseConfig = {
                 listContainer.innerHTML += `
                 <div>
                     <h3 class="font-bold text-gray-500 text-lg border-l-4 border-gray-400 pl-2 mb-3">Others</h3>
-                    <div class="grid grid-cols-3 gap-6 px-4">
+                    <div class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 px-2">
                         ${gamesHTML}
                     </div>
                 </div>`;
@@ -1248,7 +1246,7 @@ const firebaseConfig = {
             
             if (snapshot.empty) {
                 container.innerHTML = `
-                    <div class="text-center py-12">
+                    <div class="text-center py-12 col-span-full">
                         <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                             <i class="fas fa-video text-gray-700 text-2xl"></i>
                         </div>
@@ -1262,7 +1260,7 @@ const firebaseConfig = {
                 const data = doc.data();
                 container.innerHTML += `
                     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all duration-300 group">
-                        <div class="relative" onclick="window.open('${data.link}', '_blank')">
+                        <div class="relative cursor-pointer" onclick="window.open('${data.link}', '_blank')">
                             <div class="aspect-video bg-gray-100 overflow-hidden">
                                 <img src="${data.thumbnail}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
                             </div>
@@ -1967,7 +1965,6 @@ const firebaseConfig = {
                 const num = data[fieldKey] || data[method] || "Not Available";
                 document.getElementById('pay-admin-number').innerText = num;
 
-                // Load QR Code if exists in Firebase
                 const qrKeyMap = { esewa: 'eSewaQR', khalti: 'KhaltiQR', bank: 'BankQR' };
                 const qrFieldKey = qrKeyMap[method.toLowerCase()] || (method + 'QR');
                 const qrUrl = data[qrFieldKey];
@@ -2103,7 +2100,7 @@ const firebaseConfig = {
                     if (pendingDirectOrder.gameType === 'code') {
                          await processVoucherOrder(pendingDirectOrder.playerId);
                     } else if (pendingDirectOrder.gameType === 'auto-topup') {
-                         await processAutoTopUpOrder(pendingDirectOrder.playerId);
+                         await processAutoTopUpUser(pendingDirectOrder.playerId);
                     } else {
                          processUidOrder(pendingDirectOrder.playerId);
                     }
