@@ -158,7 +158,6 @@
         </div>
     </header>
 
-    <!-- यहाँ Notice लाई PC मा पनि मिलेर बस्ने गरी max-w-5xl र mx-auto थपिएको छ -->
     <div id="notice-section" class="mb-0 px-3">
         <div class="bg-sky-500 text-white p-4 relative max-w-5xl mx-auto rounded-xl shadow-sm mt-3">
             <button onclick="this.parentElement.parentElement.style.display='none'" class="absolute top-2 right-2 text-white/80 hover:text-white transition">
@@ -855,6 +854,9 @@ const firebaseConfig = {
     let userBalance = 0;
     let selectedProduct = null;
     let howToVideoId = "dQw4w9WgXcQ";
+    
+    // Global Settings Variables for API Key
+    let globalGameSkinboApiKey = "";
 
     function loadHowToVideo() {
         db.collection("settings").doc("videos").get().then((doc) => {
@@ -890,6 +892,9 @@ const firebaseConfig = {
                 const siteName = data.siteName || "Nenox Shop";
                 
                 isAutoPayEnabled = data.autoPayEnabled === true;
+                
+                // Load GameSkinbo API Key from Firestore settings/general
+                globalGameSkinboApiKey = data.gameSkinboApiKey || data.gameskinboApiKey || "";
                 
                 document.getElementById('header-logo-img').src = logoUrl;
                 document.getElementById('about-logo-img').src = logoUrl;
@@ -927,7 +932,7 @@ const firebaseConfig = {
         Swal.showLoading();
         auth.createUserWithEmailAndPassword(email, pass)
             .then((cred) => db.collection('users').doc(cred.user.uid).set({
-                name: name, email: email, phone: phone, balance: 0, createdAt: new Date()
+                name: name, email: email, phone: phone, balance: 0, photoURL: '', createdAt: new Date()
             }))
             .then(() => {
                 Swal.fire('Success', 'Account Created!', 'success');
@@ -961,8 +966,11 @@ const firebaseConfig = {
                         email: user.email,
                         balance: 0,
                         createdAt: new Date(),
-                        photoURL: user.photoURL
+                        photoURL: user.photoURL || ''
                     });
+                } else {
+                    // Update photoURL if logged in via Google again
+                    userRef.update({ photoURL: user.photoURL || '' });
                 }
             });
             showSec('home');
@@ -1449,17 +1457,24 @@ const firebaseConfig = {
 
         if (result.isConfirmed) {
             Swal.showLoading();
+            
+            // Fetch user profile info to attach name and photo to order for recent orders feed
+            const userDocSnap = await db.collection('users').doc(currentUser.uid).get();
+            const userData = userDocSnap.exists ? userDocSnap.data() : {};
+            const orderUserName = userData.name || currentUser.displayName || currentUser.email || "User";
+            const orderUserPhoto = userData.photoURL || currentUser.photoURL || "";
+
             if (selectedGameType === 'code') {
-                processVoucherOrder(playerId);
+                processVoucherOrder(playerId, orderUserName, orderUserPhoto);
             } else if (selectedGameType === 'auto-topup') {
-                processAutoTopUpOrder(playerId);
+                processAutoTopUpOrder(playerId, orderUserName, orderUserPhoto);
             } else {
-                processUidOrder(playerId);
+                processUidOrder(playerId, orderUserName, orderUserPhoto);
             }
         }
     }
     
-    async function processVoucherOrder(playerId) {
+    async function processVoucherOrder(playerId, orderUserName = "", orderUserPhoto = "") {
         const stockRef = db.collection('services').doc(selectedGameId).collection('products').doc(selectedProduct.id).collection('stock');
         const availableStockSnap = await stockRef.where('status', '==', 'available').limit(1).get();
 
@@ -1485,9 +1500,18 @@ const firebaseConfig = {
             });
 
             await db.collection('orders').add({
-                userId: currentUser.uid, userName: currentUser.email, gameName: selectedGameName, gameId: selectedGameId,
-                productName: selectedProduct.name, price: selectedProduct.price, playerId: playerId, type: 'code',
-                status: 'success', redeemCode: voucherCode, date: new Date()
+                userId: currentUser.uid, 
+                userName: orderUserName || currentUser.email, 
+                userPhoto: orderUserPhoto,
+                gameName: selectedGameName, 
+                gameId: selectedGameId,
+                productName: selectedProduct.name, 
+                price: selectedProduct.price, 
+                playerId: playerId, 
+                type: 'code',
+                status: 'success', 
+                redeemCode: voucherCode, 
+                date: new Date()
             });
 
             Swal.fire('Success', 'Voucher Purchased! Check History for Code.', 'success');
@@ -1498,14 +1522,29 @@ const firebaseConfig = {
         }
     }
 
-    function processUidOrder(playerId) {
+    async function processUidOrder(playerId, orderUserName = "", orderUserPhoto = "") {
+        if (!orderUserName) {
+            const uDoc = await db.collection('users').doc(currentUser.uid).get();
+            const uData = uDoc.exists ? uDoc.data() : {};
+            orderUserName = uData.name || currentUser.displayName || currentUser.email || "User";
+            orderUserPhoto = uData.photoURL || currentUser.photoURL || "";
+        }
+
         const newBalance = userBalance - selectedProduct.price;
         db.collection('users').doc(currentUser.uid).update({ balance: newBalance })
         .then(() => {
             return db.collection('orders').add({
-                userId: currentUser.uid, userName: currentUser.email, gameName: selectedGameName, gameId: selectedGameId,
-                playerId: playerId, productName: selectedProduct.name, price: selectedProduct.price, type: 'uid',
-                status: 'pending', date: new Date()
+                userId: currentUser.uid, 
+                userName: orderUserName, 
+                userPhoto: orderUserPhoto,
+                gameName: selectedGameName, 
+                gameId: selectedGameId,
+                playerId: playerId, 
+                productName: selectedProduct.name, 
+                price: selectedProduct.price, 
+                type: 'uid',
+                status: 'pending', 
+                date: new Date()
             });
         })
         .then(() => {
@@ -1515,7 +1554,7 @@ const firebaseConfig = {
         .catch(err => Swal.fire('Error', err.message, 'error'));
     }
 
-    async function processAutoTopUpOrder(playerId) {
+    async function processAutoTopUpOrder(playerId, orderUserName = "", orderUserPhoto = "") {
         const settingsDoc = await db.collection("settings").doc("general").get();
         if (!settingsDoc.exists) {
             return Swal.fire('Configuration Error', 'Admin settings not found. Please contact support.', 'error');
@@ -1538,6 +1577,13 @@ const firebaseConfig = {
         const stockDoc = availableStockSnap.docs[0];
         const uniPinCode = stockDoc.data().code;
 
+        if (!orderUserName) {
+            const uDoc = await db.collection('users').doc(currentUser.uid).get();
+            const uData = uDoc.exists ? uDoc.data() : {};
+            orderUserName = uData.name || currentUser.displayName || currentUser.email || "User";
+            orderUserPhoto = uData.photoURL || currentUser.photoURL || "";
+        }
+
         const userRef = db.collection('users').doc(currentUser.uid);
         const orderRef = db.collection('orders').doc(); 
 
@@ -1553,9 +1599,18 @@ const firebaseConfig = {
                     stockCount: firebase.firestore.FieldValue.increment(-1)
                 });
                 t.set(orderRef, {
-                    userId: currentUser.uid, userName: currentUser.email, gameName: selectedGameName, gameId: selectedGameId,
-                    playerId: playerId, productName: selectedProduct.name, price: selectedProduct.price, type: 'auto-topup',
-                    status: 'pending', date: new Date(), usedUniPinCode: uniPinCode 
+                    userId: currentUser.uid, 
+                    userName: orderUserName, 
+                    userPhoto: orderUserPhoto,
+                    gameName: selectedGameName, 
+                    gameId: selectedGameId,
+                    playerId: playerId, 
+                    productName: selectedProduct.name, 
+                    price: selectedProduct.price, 
+                    type: 'auto-topup',
+                    status: 'pending', 
+                    date: new Date(), 
+                    usedUniPinCode: uniPinCode 
                 });
             });
 
@@ -1595,7 +1650,7 @@ const firebaseConfig = {
     }
 
     function uidCheck() {
-        const uid = document.getElementById("game-player-id").value;
+        const uid = document.getElementById("game-player-id").value.trim();
         const box = document.getElementById("uidCheckBtn");
 
         if (!uid) {
@@ -1605,25 +1660,40 @@ const firebaseConfig = {
             return;
         }
 
+        if (!globalGameSkinboApiKey) {
+            box.innerHTML = "API Key not configured in Admin!";
+            box.classList.remove("bg-gradient-to-r", "from-red-700", "to-orange-500");
+            box.classList.add("bg-black");
+            return;
+        }
+
         box.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Name is loading...';
         box.classList.remove("bg-gradient-to-r", "from-red-700", "to-orange-500");
         box.classList.add("bg-black");
 
-        const apiURL = `https://bhauxinfo2.vercel.app/bhau?uid=${uid}&region=BD&key=YOUR_API_KEY_HERE`;
+        // GameSkinbo API Request URL
+        const apiURL = `https://api.gameskinbo.com/ff-info/get?uid=${uid}`;
 
-        fetch(apiURL)
-            .then(res => res.json())
-            .then(data => {
-                let name =
-                    (data.basicInfo && data.basicInfo.nickname) ||
-                    data.nickname ||
-                    "Invalid UID";
-
-                box.innerHTML = name; 
-            })
-            .catch(() => {
-                box.innerHTML = "No nickname found!";
-            });
+        fetch(apiURL, {
+            method: 'GET',
+            headers: {
+                'x-api-key': globalGameSkinboApiKey
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            let name = "Invalid UID";
+            if (data && data.AccountInfo && data.AccountInfo.AccountName) {
+                name = data.AccountInfo.AccountName;
+            } else if (data && data.nickname) {
+                name = data.nickname;
+            }
+            box.innerHTML = name; 
+        })
+        .catch((err) => {
+            console.error("UID Check Error:", err);
+            box.innerHTML = "No nickname found!";
+        });
     }
 
     function showSec(secId) {
@@ -1709,15 +1779,12 @@ const firebaseConfig = {
                 
                 orders.forEach(d => {
                     let statusColor = "bg-yellow-100 text-yellow-700 border-yellow-500";
-                    let icon = "fa-clock";
 
                     const status = d.status ? d.status.toLowerCase() : 'pending';
                     if (status === 'success' || status === 'complete' || status === 'completed') {
                         statusColor = "bg-green-100 text-green-700 border-green-500";
-                        icon = "fa-check-circle";
                     } else if (status === 'cancel' || status === 'rejected') {
                         statusColor = "bg-red-100 text-red-700 border-red-500";
-                        icon = "fa-times-circle";
                     }
 
                     let dateStr = "N/A";
@@ -1787,7 +1854,7 @@ const firebaseConfig = {
 
                 container.innerHTML = "";
                 
-                deposits.forEach((d, index) => {
+                deposits.forEach((d) => {
                     let rawStatus = (d.status || 'pending').toLowerCase();
                     let statusBadgeClass = "text-yellow-600";
                     let displayStatusText = rawStatus;
@@ -1861,8 +1928,18 @@ const firebaseConfig = {
               snapshot.forEach(doc => {
                   const data = doc.data();
                   let displayName = "Customer";
-                  if(data.userName) { displayName = data.userName.includes('@') ? data.userName.split('@')[0] : data.userName; }
-                  const firstChar = displayName.charAt(0).toUpperCase();
+                  if (data.userName) { 
+                      displayName = data.userName.includes('@') ? data.userName.split('@')[0] : data.userName; 
+                  }
+                  
+                  let avatarHtml = '';
+                  if (data.userPhoto && data.userPhoto.trim() !== '') {
+                      avatarHtml = `<img src="${data.userPhoto}" class="w-full h-full object-cover rounded-full">`;
+                  } else {
+                      const firstChar = displayName.charAt(0).toUpperCase();
+                      avatarHtml = `<span class="text-white text-lg font-sans font-medium">${firstChar}</span>`;
+                  }
+
                   let statusText = (data.status || 'pending').toLowerCase();
                   let statusBadgeClass = 'bg-red-500 text-white';
                   if (['success', 'complete', 'completed'].includes(statusText)) {
@@ -1872,7 +1949,20 @@ const firebaseConfig = {
                       statusBadgeClass = 'bg-[#ffc107] text-gray-800';
                       statusText = 'processing';
                   }
-                  container.innerHTML += `<div class="bg-white p-3 rounded-xl shadow-[0_2px_10px_rgba(0,0,0,0.03)] border border-gray-100 flex items-center justify-between"><div class="flex items-center gap-3 overflow-hidden"><div class="w-11 h-11 min-w-[44px] bg-[#0d6efd] rounded-full flex items-center justify-center text-white text-lg font-sans font-medium shadow-sm">${firstChar}</div><div class="flex flex-col truncate"><span class="text-gray-600 font-bold text-sm truncate">${displayName}</span><span class="text-gray-500 text-[11px] font-medium truncate">${data.productName} - Rs. ${data.price}</span></div></div><div class="${statusBadgeClass} px-3 py-1 rounded-full text-[10px] font-bold capitalize shadow-sm whitespace-nowrap ml-2">${statusText}</div></div>`;
+
+                  container.innerHTML += `
+                    <div class="bg-white p-3 rounded-xl shadow-[0_2px_10px_rgba(0,0,0,0.03)] border border-gray-100 flex items-center justify-between">
+                        <div class="flex items-center gap-3 overflow-hidden">
+                            <div class="w-11 h-11 min-w-[44px] bg-[#0d6efd] rounded-full flex items-center justify-center overflow-hidden shadow-sm">
+                                ${avatarHtml}
+                            </div>
+                            <div class="flex flex-col truncate">
+                                <span class="text-gray-600 font-bold text-sm truncate">${displayName}</span>
+                                <span class="text-gray-500 text-[11px] font-medium truncate">${data.productName} - Rs. ${data.price}</span>
+                            </div>
+                        </div>
+                        <div class="${statusBadgeClass} px-3 py-1 rounded-full text-[10px] font-bold capitalize shadow-sm whitespace-nowrap ml-2">${statusText}</div>
+                    </div>`;
               });
           }, (error) => {
                console.error("Error loading recent orders: ", error);
@@ -2097,12 +2187,17 @@ const firebaseConfig = {
                         showConfirmButton: false
                     });
                     
+                    const uDocSnap = await db.collection('users').doc(currentUser.uid).get();
+                    const uData = uDocSnap.exists ? uDocSnap.data() : {};
+                    const orderUserName = uData.name || currentUser.displayName || currentUser.email || "User";
+                    const orderUserPhoto = uData.photoURL || currentUser.photoURL || "";
+
                     if (pendingDirectOrder.gameType === 'code') {
-                         await processVoucherOrder(pendingDirectOrder.playerId);
+                         await processVoucherOrder(pendingDirectOrder.playerId, orderUserName, orderUserPhoto);
                     } else if (pendingDirectOrder.gameType === 'auto-topup') {
-                         await processAutoTopUpUser(pendingDirectOrder.playerId);
+                         await processAutoTopUpOrder(pendingDirectOrder.playerId, orderUserName, orderUserPhoto);
                     } else {
-                         processUidOrder(pendingDirectOrder.playerId);
+                         processUidOrder(pendingDirectOrder.playerId, orderUserName, orderUserPhoto);
                     }
                     
                     isDirectBuy = false;
